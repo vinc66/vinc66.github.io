@@ -1,7 +1,4 @@
-HELP.md
-target
 /target/
-logs
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
@@ -14,13 +11,20 @@ logs
 .sts4-cache
 
 ### IntelliJ IDEA ###
+.mvn
 .idea
+flm_./
+target
 *.iws
 *.iml
 *.ipr
-.mvn
-.rebel
-*.rebel
+mvnw
+mvnw.cmd
+product-consumer/target/
+product-consumer/logs/
+product-service/target/
+product-web/target/
+product-consumer/logs/
 
 ### NetBeans ###
 /nbproject/private/
@@ -29,6 +33,7 @@ logs
 /nbdist/
 /.nb-gradle/
 /build/
-
-### VS Code ###
-.vscode/
+/logs
+/*.log
+/flm_
+.DS_Store
