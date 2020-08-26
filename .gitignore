@@ -37,3 +37,4 @@ product-consumer/logs/
 /*.log
 /flm_
 .DS_Store
+.deploy_git
