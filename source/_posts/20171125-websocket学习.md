@@ -1,9 +1,10 @@
 ---
-title: websockettttttt
+title: websocket
 date: 2017-11-25 11:40:21
 tags:
     网路通信
----
+---    
+
     
 ### websocket是什么
     WebSocket是H5提供的一种基于TCP链接进行full-duplex（全双工）通信的协议。

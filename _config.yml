@@ -7,13 +7,13 @@ title: 3keep
 subtitle: ''
 description: ''
 keywords:
-author: John Doe
-language: en
+author: vincent
+language: cn
 timezone: ''
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: http://blog.3keep.com
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -98,7 +98,7 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/hexo
-theme: landscape
+theme: crisp
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
