@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>SocketTimeOut引发的问题 | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  June 6, 2017
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/网络/'>网络</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">SocketTimeOut引发的问题</h1>
+  <section class="post-content article-entry">
+    <hr>
+<pre><code>最近工作的时候和上游对接广告，出现一些超时的问题。
+
+总的请求时间= 网络传输时间 + 服务器响应时间
+服务器总的响应时间 可以通过 nginx的request_time 来统计，即nginx处理请求的时间
+网络传输时间可以使用 ping 或者 ab 命令进行验证。</code></pre>
+<h4 id="压力测试命令-ab"><a href="#压力测试命令-ab" class="headerlink" title="压力测试命令 ab"></a>压力测试命令 ab</h4><pre><code>Usage: ab [options] [http[s]://]hostname[:port]/path
+Options are:
+    -n requests     Number of requests to perform              //总请求数
+    -c concurrency  Number of multiple requests to make    //每次请求的并发数
+    -t timelimit    Seconds to max. wait for responses        //最大等待响应时间
+    -b windowsize   Size of TCP send/receive buffer, in bytes    //TCP传输接收的缓冲区大小
+    -p postfile     File containing data to POST. Remember also to set -T    //POST请求
+    -u putfile      File containing data to PUT. Remember also to set -T     //GET请求
+    -T content-type Content-type header for POSTing, eg.    //设置contentType
+                    &#39;application/x-www-form-urlencoded&#39;
+                    Default is &#39;text/plain&#39;
+    -v verbosity    How much troubleshooting info to print        //详细输出
+    -w              Print out results in HTML tables                //打印HTML样式的结果
+    -i              Use HEAD instead of GET                    //HEAD代替GET
+    -x attributes   String to insert as table attributes            //设置html table的属性
+    -y attributes   String to insert as tr attributes            //设置html tr属性
+    -z attributes   String to insert as td or th attributes        //设置html td th 属性
+    -C attribute    Add cookie, eg. &#39;Apache=1234. (repeatable)    //添加请求的cookie
+    -H attribute    Add Arbitrary header line, eg. &#39;Accept-Encoding: gzip&#39;    //添加请求 header
+                    Inserted after all normal header lines. (repeatable)
+    -A attribute    Add Basic WWW Authentication, the attributes    //添加身份认证
+                    are a colon separated username and password.
+    -P attribute    Add Basic Proxy Authentication, the attributes    //添加代理认证
+                    are a colon separated username and password.
+    -X proxy:port   Proxyserver and port number to use            //使用代理
+    -V              Print version number and exit                    //ab 版本
+    -k              Use HTTP KeepAlive feature                    //使用长连接(并发和总请求数相同不会触发长连接)
+    -d              Do not show percentiles served table.
+    -S              Do not show confidence estimators and warnings.
+    -g filename     Output collected data to gnuplot format file.        //输出到指定文件
+    -e filename     Output CSV file with percentages served        //输出到CSV文件
+    -r              Don&#39;t exit on socket receive errors.                //不因为接受错误退出
+    -h              Display usage information (this message)
+    -Z ciphersuite  Specify SSL/TLS cipher suite (See openssl ciphers)    //指定SSL/TLS认证
+    -f protocol     Specify SSL/TLS protocol (SSL3, TLS1, or ALL)        //指定SSL/TLS协议
+
+总请求1000次,并发10,保持长连接,请求上游的地址。和真实线上的环境差不多。
+aixuw@uy01-07:~$ ab  -n 1000 -c  10 -v -k  http://adapi.xxxx.com:7702/time
+This is ApacheBench, Version 2.3 &lt;$Revision: 655654 $&gt;
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking adapi.xxxx.com (be patient)
+Completed 100 requests
+Completed 200 requests
+Completed 300 requests
+Completed 400 requests
+Completed 500 requests
+Completed 600 requests
+Completed 700 requests
+Completed 800 requests
+Completed 900 requests
+Completed 1000 requests
+Finished 1000 requests
+
+
+Server Software:        nginx/1.9.12
+Server Hostname:        adapi.xxxx.com
+Server Port:            7702
+
+Document Path:          /time
+Document Length:        26 bytes
+
+Concurrency Level:      10                //并发
+Time taken for tests:   5.967 seconds        //测试总用时
+Complete requests:      1000                //完成的请求
+Failed requests:        0
+Write errors:           0
+Total transferred:      209000 bytes
+HTML transferred:       26000 bytes
+Requests per second:    167.59 [#/sec] (mean)
+Time per request:       59.670 [ms] (mean)    //平均每次请求时间
+Time per request:       5.967 [ms] (mean, across all concurrent requests)  //并发平均每个请求时间
+Transfer rate:          34.21 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:       26   30  31.5     29    1025
+Processing:    26   29   1.8     29      40
+Waiting:       26   29   1.8     29      40
+Total:         53   59  31.6     57    1053
+
+Percentage of the requests served within a certain time (ms)
+  50%     57
+  66%     59
+  75%     60
+  80%     61
+  90%     63
+  95%     66
+  98%     68
+  99%     70
+ 100%   1053 (longest request)
+
+据上游反应服务器的响应时间也就是nginx处理请求时间在200到250ms以内加上网络传输时间超过了我们设置的250ms超时时间。
+ 最后我们这边将超时时间改为300ms，超时率下降。</code></pre>
+<h4 id="完整的http连接"><a href="#完整的http连接" class="headerlink" title="完整的http连接"></a>完整的http连接</h4><pre><code>客户端C,服务端S
+三次握手
+    1.C向S发送TCP的包,带上标志SYN
+    2.S接受后开始回复SYN+ACK给C,表示同意连接
+    3.C发送ACK给S,完成三次握手
+四次挥手
+    1.C经过大约30s表示不会再请求数据,便向S发送FIN的标志
+    2.S收到向C发送ACK。   此时连接处于半关闭,S可以向C发送,C无法向S请求数据
+    3.S要把连接关闭向C发送FIN
+    4.C向S发送ACK,连接完全关闭</code></pre>
+<p>参考: <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/27021102?group_id=849574141450412032">https://zhuanlan.zhihu.com/p/27021102?group_id=849574141450412032</a></p>
+<hr>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2017/06/08/20170608_jenkins%E7%AE%80%E6%98%93%E4%BD%BF%E7%94%A8/">
+        ← prev <!--jenkins简易使用-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/04/24/20170424_mysql%E8%AF%AD%E5%8F%A5%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/">
+        <!--mysql语句执行顺序--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+

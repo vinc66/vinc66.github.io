@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>redis集群创建 | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  March 15, 2017
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/redis/'>redis</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">redis集群创建</h1>
+  <section class="post-content article-entry">
+    <h4 id="1-配置流程"><a href="#1-配置流程" class="headerlink" title="1.配置流程"></a>1.配置流程</h4><hr>
+<pre><code>1.集群最少有3个节点。redis集群是有3个主节点，3个子节点。
+2.创建集群节点
+ 在虚机
+    192.168.247.130 创建/nh/redis/6380/ /nh/redis/6381/
+    192.168.247.129 创建/nh/redis/6382/ /nh/redis/6383/
+    192.168.247.128 创建/nh/redis/6384/ /nh/redis/6385/
+3.每个文件夹底下创建文件redis.conf内容为：
+    daemonize yes
+    port 6380   #需要修改
+    dir /nh/redis/6380/  #需要修改
+    pidfile redis.pid
+    logfile redis.log
+    loglevel verbose
+    cluster-enabled yes
+    cluster-config-file nodes.conf
+    cluster-node-timeout 5000
+    cluster-require-full-coverage no
+    appendonly no
+    protected-mode no  
+4.cd到每一个文件夹内，执行../../src/redis-server ./redis.conf
+启动多个redis服务。在目录下会出现nodes.conf这样的文件，有类似的信息。
+[82462] 26 Nov 11:56:55.329 * No cluster configuration found, I&#39;m 97a3a64667477371c4479320d683e4c8db5858b1
+5.搭建每个服务之间的联系，创建集群，因为redis依赖ruby，如果没有，需要安装。
+yum install ruby（如果没有安装ruby）
+然后安装 gem 因为下面需要用到其命令
+yum install ruby rubygems（如果没有安装gem ）
+gem install redis
+构建集群之间的联系（注意防火墙）
+./src/redis-trib.rb create --replicas 1 192.168.247.130:6380 192.168.247.130:6381 192.168.247.129:6382 
+192.168.247.129:6383 192.168.247.128:6384 192.168.247.128:6385
+打印日志
+&gt;&gt;&gt; Creating cluster
+&gt;&gt;&gt; Performing hash slots allocation on 6 nodes...
+..............
+&gt;&gt;&gt; Check for open slots...
+&gt;&gt;&gt; Check slots coverage...
+[OK] All 16384 slots covered.
+6.在客户端进行测试
+./redis-cli -c -p 6380 -h 192.168.247.130
+./redis-cli -p 7000 cluster nodes 获取所有的节点
+./redis-trib.rb add-node 192.168.247.130:6386 192.168.247.130:6380 为6380添加端口6386的子节点
+7.redis官方提供了一个简易创建集群的脚本
+在redis-3.2.0/utils/create-cluster 下
+./create-cluster start
+./create-cluster create
+自动创建 3masters 3 slaves
+
+redis cluster的每个节点需要提供两个tcp接口，必须6390这种是用于server和client之间进行连接使用的，
+还有一个高端口比如16390这种接口，用于失败重新选择master，配置更新，身份确认之类。</code></pre>
+<hr>
+<h4 id="2-分片"><a href="#2-分片" class="headerlink" title="2.分片"></a>2.分片</h4><hr>
+<pre><code>启动集群，redis会自动分片
+./src/redis-cli -p 6380 cluster nodes
+ ........
+ 可以将一个实例的slot分配到其他机器
+./redis-trib.rb reshard 192.168.247.130:6380
+可以使用脚本
+./redis-trib.rb reshard --from &lt;node-id&gt; --to &lt;node-id&gt; --slots &lt;number of slots&gt; --yes &lt;host&gt;:&lt;port&gt;</code></pre>
+<hr>
+<h4 id="3-客户端连接"><a href="#3-客户端连接" class="headerlink" title="3.客户端连接"></a>3.客户端连接</h4><hr>
+<pre><code>java连接redis_cluster   &#123;% link add2web https://github.com/BinaryVinc/add2web %&#125;
+虚机的网络连接方式 NAT不支持cluster,
+hostonly用jedis连接的时候nodes的地址是127.0.0.1,不合适。
+最好使用桥接方式。</code></pre>
+<hr>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2017/03/29/20170329_Data-structures-linked-List/">
+        ← prev <!--Data_structures_linked_list-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/02/07/20170207_redis3-2-7%E5%AE%89%E8%A3%85%E5%87%BA%E7%8E%B0%E7%9A%84%E5%B0%8F%E9%97%AE%E9%A2%98/">
+        <!--redis3.2.7安装出现的小问题--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+

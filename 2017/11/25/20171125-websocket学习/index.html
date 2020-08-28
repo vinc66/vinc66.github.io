@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>websocket | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  November 25, 2017
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/网路通信/'>网路通信</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">websocket</h1>
+  <section class="post-content article-entry">
+    <h3 id="websocket是什么"><a href="#websocket是什么" class="headerlink" title="websocket是什么"></a>websocket是什么</h3><pre><code>WebSocket是H5提供的一种基于TCP链接进行full-duplex（全双工）通信的协议。
+http协议需要三次握手，一次request对应一次reponse，只能通过客户端主动向服务端发送请求。
+Websocket是一次握手，然后建立一个通道，持续通信。客户端可以向服务端请求，而且服务端也可以主动向客户端发送信息。
+当然也可以通过类似ajax轮询之类的方式做到类似的功能，但是比较被动，和一条懒狗是的，得戳一下才能挪几步，很耗费精力（资源）。
+websocket可是真正的双向通信。</code></pre>
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><pre><code>1.社交订阅
+2.多玩家游戏     
+3.协同编辑/编程
+4.点击流数据         
+5.股票基金报价
+6.体育实况更新
+7.多媒体聊天
+8.基于位置的应用
+9.在线教育</code></pre>
+<h3 id="具体的"><a href="#具体的" class="headerlink" title="具体的"></a>具体的</h3><pre><code>我就写了一下， 基于spring-websockt的，当然直接用tomcat8自带的tomcat-websocket.jar也成 。这里不得不说下websocket当下最火的应用
+场景，弹幕，我就直接去b站了。</code></pre>
+<a href="https://github.com/BinaryVinc/vserver/tree/chat-room" title="[external] [title]" target="">基于websockt聊天室</a>
+
+<h4 id="a-直播"><a href="#a-直播" class="headerlink" title="a.直播"></a>a.直播</h4><img src="/img/20171125-websocket%E5%AD%A6%E4%B9%A0/1.png" class="">
+<h5 id="上图有这么几个参数需要搞一哈"><a href="#上图有这么几个参数需要搞一哈" class="headerlink" title="上图有这么几个参数需要搞一哈"></a>上图有这么几个参数需要搞一哈</h5><pre><code>Request Headers
+Connection: Upgrade #表示当前的连接方式是升级版的，普通的http一般是keep-alive长连接方式
+Upgrade: websocket  #升级版的叫做websocket
+Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw== #这是浏览器随机生成的base64之后的值，作为一个有身份的链接
+Sec-WebSocket-Protocol: chat, superchat
+Sec-WebSocket-Version: 13
+
+Response  Headers
+Sec-WebSocket-Accept    #这个是Sec-WebSocket-Key加密后的一串    </code></pre>
+<img src="/img/20171125-websocket%E5%AD%A6%E4%B9%A0/2.png" class="">
+<h5 id="上图WebSocket通信的Time一直是pending。"><a href="#上图WebSocket通信的Time一直是pending。" class="headerlink" title="上图WebSocket通信的Time一直是pending。"></a>上图WebSocket通信的Time一直是pending。</h5><img src="/img/20171125-websocket%E5%AD%A6%E4%B9%A0/3.png" class="">
+<h5 id="frames就是具体通道"><a href="#frames就是具体通道" class="headerlink" title="frames就是具体通道"></a>frames就是具体通道</h5><h4 id="b-非直播"><a href="#b-非直播" class="headerlink" title="b.非直播"></a>b.非直播</h4><img src="/img/20171125-websocket%E5%AD%A6%E4%B9%A0/4.png" class="">
+<pre><code>先把以前包括时间点，屏幕位置的弹幕信息拉下来，
+当然还有一个websocket通道来收集新的弹幕。</code></pre>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2017/12/14/20171214-shutdownhook/">
+        ← prev <!--ShutdownHook-优雅关闭-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/11/03/20171103_%E6%80%A7%E8%83%BD%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7pingpoint/">
+        <!--性能管理工具pingpoint--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+

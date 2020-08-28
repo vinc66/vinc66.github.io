@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>Data_structures_linked_list | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  March 29, 2017
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/data-structures/'>data_structures</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">Data_structures_linked_list</h1>
+  <section class="post-content article-entry">
+    <hr>
+<h4 id="1-链表定义"><a href="#1-链表定义" class="headerlink" title="1.链表定义"></a>1.链表定义</h4><pre><code>链表即是由节点（Node）组成的线性集合，每个节点可以利用指针指向其他节点。它是一种包含了多个节点的、能够用于表示序列的数据结构。
+单向链表: 链表中的节点仅指向下一个节点，并且最后一个节点指向空。
+双向链表: 其中每个节点具有两个指针 p、n，使得 p 指向先前节点并且 n 指向下一个节点；最后一个节点的 n 指针指向 null。
+循环链表：每个节点指向下一个节点并且最后一个节点指向第一个节点的链表。
+时间复杂度:
+索引: O(n)
+搜索: O(n)
+插入: O(1)
+移除: O(1)</code></pre>
+<hr>
+<h4 id="2-code"><a href="#2-code" class="headerlink" title="2.code"></a>2.code</h4><hr>
+<pre><code>//俩链表相加结果逆序放在一个新的链表
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) &#123;
+    ListNode l11 = l1;
+    ListNode l22 = l2;
+    ListNode lo = new ListNode(0);
+    ListNode head = lo;
+    int sum = 0;
+    while (l11 != null || l22 != null) &#123;
+        sum /= 10;
+        if (l11 != null) &#123;
+            sum += l11.val;
+            l11 = l11.next;
+        &#125;
+        if (l22 != null) &#123;
+            sum += l22.val;
+            l22 = l22.next;
+        &#125;
+        head.next = new ListNode(sum % 10);
+        head = head.next;
+    &#125;
+    if (sum / 10 == 1)
+        head.next = new ListNode(1);
+    return lo.next;
+&#125;
+
+//删除链表中指定的元素
+public void deleteNode(ListNode node) &#123;
+    node.val = node.next.val;
+    node.next = node.next.next;
+&#125;
+
+//链表逆序展示
+public ListNode reverseList(ListNode head) &#123;
+    if (head == null) return head;
+    ListNode newList = new ListNode(0);
+    while (head != null) &#123;
+        ListNode tmp = head;
+        head = tmp.next;
+        tmp.next = newList;
+        newList = tmp;
+    &#125;
+    return newList;
+&#125;
+
+/**
+ * 回文结构  123321 正反读一样
+ * 一个读的快 一个读的慢，
+ * 栈先进后出
+ *
+ * @param head
+ * @return
+ */
+public boolean isPalindrome(ListNode head) &#123;
+    ListNode s = head;
+    ListNode f = head;
+    Stack&lt;Integer&gt; stack = new Stack();
+
+    while (f != null &amp;&amp; f.next != null) &#123;
+        stack.push(s.val);
+        f = f.next.next;
+        s = s.next;
+    &#125;
+    //如果只有一个数
+    if (f != null)
+        s = s.next;
+    while (s.next != null) &#123;
+        if (s.next.val != stack.pop()) return false;
+        s = s.next;
+    &#125;
+    return true;
+&#125;
+
+//链表排序
+public ListNode mergeKLists(ListNode[] lists) &#123;
+    ListNode lo = new ListNode(0);
+    ListNode head = lo;
+
+    for (int i = 0; i &lt; lists.length; i++) &#123;
+        for (int j = 0; j &lt; lists.length - 1; j++) &#123;
+            if (lists[j].val &lt; lists[j + 1].val) &#123;
+                ListNode tmp = null;
+                tmp = lists[j];
+                lists[j] = lists[j + 1];
+                lists[j + 1] = tmp;
+            &#125;
+        &#125;
+    &#125;
+    for (ListNode l : lists) &#123;
+        head.next = l;
+        head = head.next;
+    &#125;
+    return lo.next;
+&#125;
+class ListNode &#123;
+    int val;
+    ListNode next;
+
+    ListNode(int x) &#123;
+        val = x;
+    &#125;
+
+&#125;</code></pre>
+<hr>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2017/04/24/20170424_mysql%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+        ← prev <!--mysql常用命令-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/03/15/20170315_redis%E9%9B%86%E7%BE%A4%E5%88%9B%E5%BB%BA/">
+        <!--redis集群创建--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+

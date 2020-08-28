@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>mysql语句执行顺序 | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  April 24, 2017
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/mysql/'>mysql</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">mysql语句执行顺序</h1>
+  <section class="post-content article-entry">
+    <hr>
+<pre><code>  1. FORM: 对FROM的左边的表和右边的表计算笛卡尔积。产生虚表VT1
+  2. ON: 对虚表VT1进行ON筛选，只有那些符合&lt;join-condition&gt;的行才会被记录在虚表VT2中。
+  3. JOIN： 如果指定了OUTER JOIN（比如left join、 right join），那么保留表中未匹配的行就会作为外部行添加到虚拟表VT2中，
+  产生虚拟表VT3, rug from子句中包含两个以上的表的话，那么就会对上一个join连接产生的结果VT3和下一个表重复执行步骤1~3这三个步骤，
+  一直到处理完所有的表为止。
+  4. WHERE： 对虚拟表VT3进行WHERE条件过滤。只有符合&lt;where-condition&gt;的记录才会被插入到虚拟表VT4中。
+  5. GROUP BY: 根据group by子句中的列，对VT4中的记录进行分组操作，产生VT5.
+  6. CUBE | ROLLUP: 对表VT5进行cube或者rollup操作，产生表VT6.
+  7. HAVING： 对虚拟表VT6应用having过滤，只有符合&lt;having-condition&gt;的记录才会被 插入到虚拟表VT7中。
+  8. SELECT： 执行select操作，选择指定的列，插入到虚拟表VT8中。
+  9. DISTINCT： 对VT8中的记录进行去重。产生虚拟表VT9.
+  10. ORDER BY: 将虚拟表VT9中的记录按照&lt;order_by_list&gt;进行排序操作，产生虚拟表VT10.
+  11. LIMIT：取出指定行的记录，产生虚拟表VT11, 并将结果返回。
+
+  where后的查询条件是从右往左执行</code></pre>
+<hr>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2017/06/06/20170606_SocketTimeout%E5%BC%95%E5%8F%91%E7%9A%84%E9%97%AE%E9%A2%98/">
+        ← prev <!--SocketTimeOut引发的问题-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/04/24/20170424_mysql%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+        <!--mysql常用命令--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+

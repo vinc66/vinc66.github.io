@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>性能管理工具pingpoint | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  November 3, 2017
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/tools/'>tools</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">性能管理工具pingpoint</h1>
+  <section class="post-content article-entry">
+    <pre><code>最近没什么事，研究了一下pingpoint，供以后参考。
+这是一个能够管理大型分布式应用的性能管理工具，通过追踪分布式的事务会话，提供分析整体架构中容器之间的交互的解决方案。
+优点是侵入少，通过几行代码就能安装监控引擎，对应用最低只有3%的影响。
+pingpoint地址：https://github.com/naver/pinpoint</code></pre>
+<h2 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h2><img src="/img/20171103_%E6%80%A7%E8%83%BD%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7pingpoint/01.png" class="">
+<h2 id="准备-一定要注意版本搭配"><a href="#准备-一定要注意版本搭配" class="headerlink" title="准备 (一定要注意版本搭配)"></a>准备 (一定要注意版本搭配)</h2><pre><code>centOS虚拟机3台,2台2G,1台4G(关掉防火墙的)
+jdk 1.8
+tomcat 8
+HBase 1.2.6
+Pingpoint Collector 1.6.2
+Pingpoint Web   1.6.2
+Pingpoint Agent 1.6.2
+zookeeper 3.4.9</code></pre>
+<h3 id="1-启动zookeeper"><a href="#1-启动zookeeper" class="headerlink" title="1.启动zookeeper"></a>1.启动zookeeper</h3><pre><code>三台虚机地址
+192.168.247.128
+192.168.247.129
+192.168.247.130
+每台都布置了zk</code></pre>
+<h3 id="2-配置hbase"><a href="#2-配置hbase" class="headerlink" title="2.配置hbase"></a>2.配置hbase</h3><pre><code>hbase存储收集的信息，一般也要分布式的集群，我这里就启动一台</code></pre>
+<h4 id="修改hbase-env-sh"><a href="#修改hbase-env-sh" class="headerlink" title="修改hbase-env.sh"></a>修改hbase-env.sh</h4><pre><code>配置自己的jdk的地址
+export JAVA_HOME=/usr/local/jdk1.8.0_101
+用自个的,不用hbase管理zk
+export HBASE_MANAGES_ZK=false</code></pre>
+<h4 id="修改hbase-site-xml"><a href="#修改hbase-site-xml" class="headerlink" title="修改hbase-site.xml"></a>修改hbase-site.xml</h4><pre><code>一般hbase要用hdfs做数据落地
+配置zookeeper地址
+配置hbase为分布式的
+配置zookeeper数据存放路径
+面是我自己的配置</code></pre>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;hdfs:&#x2F;&#x2F;data1:9000&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.zookeeper.quorum&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;192.168.247.128,192.168.247.129,192.168.247.130&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.cluster.distributed&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;true&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hbase.zookeeper.property.dataDir&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;value&gt;&#x2F;usr&#x2F;local&#x2F;zookeeper-3.4.9&#x2F;data&#x2F;&lt;&#x2F;value&gt;</span><br><span class="line">&lt;&#x2F;property&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="在hbase目录执行"><a href="#在hbase目录执行" class="headerlink" title="在hbase目录执行"></a>在hbase目录执行</h4><pre><code>./bin/start-hbase.sh
+可能会要输入password验明正身，在zookeeper的bin目录下用zkCli.sh去看路径多了一个hbase的znode节点。
+[root@server3 hbase-1.2.6]# jps
+13555 HMaster       
+10794 QuorumPeerMain
+13659 HRegionServer
+18203 Jps
+然后需要初始化pingpoint的数据格式文件hbase-create.hbase，这个文件在下载网页的source code.zip解压完的hbase-&gt;scripts文件下面
+然后执行
+./hbase-1.2.6/bin/hbase shell hbase-create.hbase
+hbaes提供了界面化的工具，hbase部署的ip:端口 192.168.247.130:16010</code></pre>
+<h3 id="3-配置web-collector-agent"><a href="#3-配置web-collector-agent" class="headerlink" title="3.配置web,collector,agent"></a>3.配置web,collector,agent</h3><pre><code>tomcat的tar包解压，记得修改conf.server.xml的端口号。
+把pinpoint-web-1.6.2.war解压放在tomcat_web/webapps/ROOT,然后启动,地址192.168.247.130:38080
+把pinpoint-collector-1.6.2.war解压在tomcat_collector/webapps/ROOT,然后启动
+把pinpoint-agent-1.6.2.tar.gz解压到/usr/local/pinpoint-agent-1.6.2
+需要监控的程序，比如tomcat
+修改bin/catalina.sh
+在头上加
+CATALINA_OPTS=&quot;$CATALINA_OPTS -javaagent:/usr/local/pinpoint-agent-1.6.2/pinpoint-bootstrap-1.6.2.jar&quot;
+CATALINA_OPTS=&quot;$CATALINA_OPTS -Dpinpoint.agentId=ppserverOne&quot;
+CATALINA_OPTS=&quot;$CATALINA_OPTS -Dpinpoint.applicationName=server&quot;
+访问一下测试程序</code></pre>
+<h3 id="4-监控"><a href="#4-监控" class="headerlink" title="4.监控"></a>4.监控</h3><pre><code>打开tomcat_web的地址192.168.247.130:38080
+主页面</code></pre>
+<img src="/img/20171103_%E6%80%A7%E8%83%BD%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7pingpoint/02.PNG" class="">
+<pre><code>server状态</code></pre>
+<img src="/img/20171103_%E6%80%A7%E8%83%BD%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7pingpoint/03.PNG" class="">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2017/11/25/20171125-websocket%E5%AD%A6%E4%B9%A0/">
+        ← prev <!--websocket-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/09/07/20170907_base64%E7%BC%96%E8%A7%A3%E7%A0%81/">
+        <!--base64编解码--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+

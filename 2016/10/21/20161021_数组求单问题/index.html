@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>数组求单问题 | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  October 21, 2016
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/algorithm/'>algorithm</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">数组求单问题</h1>
+  <section class="post-content article-entry">
+    <h3 id="问"><a href="#问" class="headerlink" title="问"></a>问</h3><pre><code>给定整数数组，一个数出现一次，其他每个数都出现两次。
+ 两个数出现一次，其他每个数都出现两次。要求时间复杂度位O(n),空间复杂度位O(1)。
+两个相同的整数异或会抵消，不同的整数会根据二进制0，1获得新的整数。
+如果只有一个数出现一次，数组所有数异或运算最终剩下的即为出现一次的。
+如果有两个数只出现一次，最终剩下的整数为这两个数异或产生的整数，（int类型长度32位，long长度64）在其范围内，
+二进制中至少有一个位异或的结果为1，获其下标，判断整数在此下标的二进制是为1还是0，便分出两组数。</code></pre>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">private int[] singleNumber(int[] nums) &#123;</span><br><span class="line">        int[] res = new int[2];</span><br><span class="line"></span><br><span class="line">        int num = 0;</span><br><span class="line">        <span class="keyword">for</span> (int i : nums) &#123;</span><br><span class="line">            num ^= i;</span><br><span class="line">        &#125;</span><br><span class="line">//        如果只有一个不同</span><br><span class="line">//        res[0] = num;</span><br><span class="line"></span><br><span class="line">        //如果两个不同</span><br><span class="line">        int index = bit1(num);</span><br><span class="line">        <span class="keyword">for</span> (int i : nums) &#123;</span><br><span class="line">            <span class="keyword">if</span> (isBit1(index, i)) &#123;</span><br><span class="line">                res[0] ^= i;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                res[1] ^= i;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private boolean isBit1(int index, int i) &#123;</span><br><span class="line">        i &gt;&gt;&gt;= index;</span><br><span class="line">        <span class="built_in">return</span> (i &amp; 1) == 1;</span><br><span class="line">    &#125;</span><br><span class="line">    private int bit1(int num) &#123;</span><br><span class="line">        int index = 0;</span><br><span class="line">        <span class="keyword">while</span> ((num &amp; 1) == 0 &amp;&amp; index &lt; 32) &#123;</span><br><span class="line">            num &gt;&gt;&gt;= 1;</span><br><span class="line">            index++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">return</span> index;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="位操作符"><a href="#位操作符" class="headerlink" title="位操作符"></a>位操作符</h3><pre><code>与运算 都为1才位1
+1&amp;1 = 1
+1&amp;0 = 0
+0&amp;0 = 0
+或运算 都为0才位0
+1|1 = 1
+1|0 = 1
+0|0 = 0
+非运算 相同都为0
+1^1 = 0
+1^0 = 1
+0^0 = 0</code></pre>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2016/11/03/20161103_%E8%BF%9C%E7%A8%8B%E5%90%AF%E5%8A%A8tomcat/">
+        ← prev <!--远程启动tomcat-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2016/10/19/20161019_%E6%8E%92%E6%9F%A5CPU%E5%8D%A0%E6%9C%89%E7%8E%87%E9%AB%98/">
+        <!--排查CPU占有率高--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+

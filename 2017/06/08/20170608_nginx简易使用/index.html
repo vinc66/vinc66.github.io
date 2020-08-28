@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/image.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>nginx简易使用 | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/image.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  June 8, 2017
+  
+    <span class="taglist">  &middot; 
+    
+    
+      <a href='/tags/tools/'>tools</a> 
+    
+    </span>
+  
+
+  <h1 class="post-title">nginx简易使用</h1>
+  <section class="post-content article-entry">
+    <hr>
+<h4 id="1-安装依赖的包"><a href="#1-安装依赖的包" class="headerlink" title="1.安装依赖的包"></a>1.安装依赖的包</h4><pre><code>yum -y install pcre-devel openssl openssl-devel
+pcre-devel (PCRE库是一组使用与Perl 5相同的语法和语义来实现正则表达式模式匹配的函数。)
+openssl(OpenSSL是一个开源项目，为传输层安全（TLS）和安全套接字层（SSL）协议提供了强大的商业级和全功能工具包。 它也是通用加密库。)
+openssl-devel(OpenSSL是支持加密技术的工具包。 openssl-devel包包含开发支持各种加密算法和协议的应用程序所需的包含文件。)</code></pre>
+<h4 id="2-安装nginx"><a href="#2-安装nginx" class="headerlink" title="2.安装nginx"></a>2.安装nginx</h4><pre><code>第一步：从http://nginx.org/download/上下载相应的版本
+(或者wget http://nginx.org/download/nginx-1.12.0.tar.gz直接在Linux上用命令下载)
+第二步：解压 tar -zxvf nginx-1.12.0.tar.gz 到指定喜欢的目录
+第三步：设置一下配置信息 ./configure --prefix=/usr/local/nginx ，这样一些配置文件，日志，执行文件都放到/usr/local/nginx下
+第四步：
+make 编译 （make的过程是把各种语言写的源码文件，变成可执行文件和各种库文件）
+make install 安装 （make install是把这些编译出来的可执行文件和库文件复制到合适的地方）
+
+cd到/usr/local/nginx/ 目录 /sbin/nginx 就能够启动了
+默认的访问端口是80，访问ip会出现Welcome to nginx的字样，安装成功了，但是没什么用。
+conf目录底下的nginx.conf才是关键。</code></pre>
+<h4 id="3-nginx-conf"><a href="#3-nginx-conf" class="headerlink" title="3.nginx.conf"></a>3.nginx.conf</h4><pre><code>http &#123;
+    //包括的接受类型
+    include       mime.types;
+    default_type  application/octet-stream;
+    //日志的格式
+    log_format  main  &#39;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &#39;
+                      &#39;$status $body_bytes_sent &quot;$http_referer&quot; &#39;
+                      &#39;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&#39;;
+    //日志地址
+    #access_log  logs/access.log  main;
+    sendfile        on;
+    #tcp_nopush     on;
+    #keepalive_timeout  0;
+    //长连接超时时间
+    keepalive_timeout  65;
+    #gzip  on;
+   //重点配置
+    server &#123;
+    //默认向外暴露的端口
+        listen       80;
+    //暴露的域名
+        server_name  localhost;
+    //默认编码
+        charset utf-8;
+        #access_log  logs/host.access.log  main;
+    //配置静态资源
+        location / &#123;
+            root     /nh/appdir/html/fe_cms/ad_operator/;
+            index   /index.html;
+     #error_page 404 /syserror/404.html; //地址“/”下错误跳转的页面
+            #access_log off;  //可配置是否不记录日志
+        &#125;
+    //配置接口，容器的访问地址
+        location /operator &#123;
+             proxy_pass http://127.0.0.1:8080;
+        &#125;
+    location ~ \.(gif|jpg|png)$ &#123;
+            root /data/images;
+    &#125;
+    //全局404错误页面
+    error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #全局错误
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html &#123;
+        root   html;
+    &#125;
+    &#125;
+    //如果有多个配置 加载vhosts路径下的所有conf
+    include vhosts/*.conf;
+&#125;
+
+配置完 nginx -s reload 重启，效果就有了。
+nginx -s stop  快速的关闭
+nginx -s quit   滑溜的关闭
+nginx -s reload  重新加载配置文件
+nginx -s reopen   重启log文件
+mine.types
+当web服务器收到静态的资源文件请求时，依据请求文件的后缀名在服务器的MIME配置文件中找到对应的MIME Type，
+再根据MIME Type设置HTTP Response的Content-Type，然后浏览器根据Content-Type的值处理文件。</code></pre>
+<h4 id="3-反向代理"><a href="#3-反向代理" class="headerlink" title="3.反向代理"></a>3.反向代理</h4><pre><code>upstream c-ads &#123;
+    #ip_hash;
+    server 192.168.247.128:8080    weight=10 max_fails=3 fail_timeout=10;
+    server 192.168.247.129:8080    weight=10 max_fails=3 fail_timeout=10;
+&#125;
+server &#123;
+    listen      80;
+    server_name 192.168.247.129;
+    location / &#123;
+        #include proxy.conf;
+        proxy_pass http://c-ads;
+    &#125;
+&#125;
+负载均衡的策略
+nginx 的 upstream目前支持 4 种方式的分配 ：
+1)轮询（默认） 
+      每个请求按时间顺序逐一分配到不同的后端服务器，如果后端服务器down掉，能自动剔除。 
+2)weight 
+      指定轮询几率，weight和访问比率成正比，用于后端服务器性能不均的情况。 
+2)ip_hash 
+      每个请求按访问ip的hash结果分配，这样每个访客固定访问一个后端服务器，可以解决session的问题。  
+3)fair（第三方） 
+      按后端服务器的响应时间来分配请求，响应时间短的优先分配。  
+4)url_hash（第三方）</code></pre>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <a class="newer-posts" href="/2017/09/07/20170907_base64%E7%BC%96%E8%A7%A3%E7%A0%81/">
+        ← prev <!--base64编解码-->
+    </a>
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/06/08/20170608_jenkins%E7%AE%80%E6%98%93%E4%BD%BF%E7%94%A8/">
+        <!--jenkins简易使用--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+
