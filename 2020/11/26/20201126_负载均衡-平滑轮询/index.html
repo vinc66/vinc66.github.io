@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+    <head>
+		
+        <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <link rel="shortcut icon" href="/img/logo.png"/>
+        <link rel="canonical" href="http://guolinn.com/">
+        <link rel="alternate" type="application/rss+xml" title="vincent" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq">
+        <title>负载均衡-平滑轮询算法 | 3keep</title>
+        <meta name="description" content="{{meta_description}}">
+
+        <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="/styles/crisp.css">
+        <meta name="HandheldFriendly" content="True" />
+        <meta name="MobileOptimized" content="320" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    <meta name="generator" content="Hexo 5.0.2"></head>
+    
+		<body class="post-template">
+	
+
+        <header id="header">
+            <a id="logo" href="/"><img src="/img/logo.png" alt="3keep" /></a>
+            <h1><a href="/">vincent</a></h1>
+            <p></p>
+            <div id="follow-icons">
+          <a target="_blank" rel="noopener" href="http://github.com/vinc66"><i class="fa fa-github-square fa-2x"></i></a>
+              <a target="_blank" rel="noopener" href="https://shop280504677.taobao.com/?spm=2013.1.1000126.2.6b211278PK2QWq"><i class="fa fa-rss-square fa-2x"></i></a>
+  </div>
+<h6><a href="/about">About</a></h6>
+        </header>
+
+        <main id="content">
+        
+
+<article class="post">
+  November 26, 2020
+  
+
+  <h1 class="post-title">负载均衡-平滑轮询算法</h1>
+  <section class="post-content article-entry">
+    <pre><code>最近在看dubbo的一些代码，看到cluster层的负载均衡这块，目前支持一致性hash的ConsistentHashLoadBalance，
+最少活跃数的LeastActiveLoadBalance，随机RandomLoadBalance，轮询的RoundRobinLoadBalance。
+其中看到轮询这块有一个平滑轮询算法的算法
+
+
+主要思路就是每个节点会有一个权重weight，每次让他的current = current + weight，获取最新的权重值，
+同时累加每个节点的最新权重值current， totalWeight = totalWeight + current。
+current值最大的节点为本次需要调用的节点，需要把本次选取节点的current = current - totalWeight。
+
+
+
+public static void main(String[] args) &#123;
+    Map&lt;String, WeightRounbin&gt; rounbinMap = Lists.newArrayList(
+            new WeightRounbin(&quot;10.0.0.1&quot;, 1),
+            new WeightRounbin(&quot;10.0.0.2&quot;, 2),
+            new WeightRounbin(&quot;10.0.0.3&quot;, 3))
+            .stream().collect(Collectors.toMap(WeightRounbin::getIp, x -&gt; x));
+    testRound(12, rounbinMap);
+&#125;
+
+private static void testRound(int n, Map&lt;String, WeightRounbin&gt; rounbinMap) &#123;
+    for (int i = 0; i &lt; n; i++) &#123;
+        int MAX_WEIGHT = Integer.MIN_VALUE, totalWeight = 0;
+        WeightRounbin select = null;
+        for (WeightRounbin rounbin : rounbinMap.values()) &#123;
+            int weight = rounbin.getWeight();
+            if (weight &gt; MAX_WEIGHT) &#123;
+                select = rounbin;
+                MAX_WEIGHT = weight;
+            &#125;
+            totalWeight += weight;
+        &#125;
+        if (select != null) &#123;
+            select.resetNextWeight(totalWeight);
+            System.out.println(String.format(&quot;本次选择的ip: %s, 被选中次数: %s&quot;, select.getIp(), select.getCount()));
+        &#125;
+
+    &#125;
+&#125;
+
+
+public static class WeightRounbin &#123;
+
+    private String ip;
+
+    private int weight;
+
+    private AtomicInteger selectCount = new AtomicInteger(0);
+
+    private AtomicInteger current = new AtomicInteger(0);
+
+    public WeightRounbin(String ip, int weight) &#123;
+        this.ip = ip;
+        this.weight = weight;
+    &#125;
+
+    public String getIp() &#123;
+        return ip;
+    &#125;
+
+    public int getWeight() &#123;
+        return current.addAndGet(weight);
+    &#125;
+
+    public void resetNextWeight(int totalWeight) &#123;
+        current.addAndGet(-totalWeight);
+        selectCount.incrementAndGet();
+    &#125;
+
+    public int getCount() &#123;
+        return selectCount.get();
+    &#125;
+&#125;
+
+
+调用12次的话，有6次会落到权重为3的节点，4次落到权重为2的节点，2次落到权重为1的节点。
+得到的结果会穿插的，权重大的节点也不会被频繁的调用。
+
+本次选择的ip: 10.0.0.3, 被选中次数: 1
+本次选择的ip: 10.0.0.2, 被选中次数: 1
+本次选择的ip: 10.0.0.3, 被选中次数: 2
+本次选择的ip: 10.0.0.1, 被选中次数: 1
+本次选择的ip: 10.0.0.2, 被选中次数: 2
+本次选择的ip: 10.0.0.3, 被选中次数: 3
+本次选择的ip: 10.0.0.3, 被选中次数: 4
+本次选择的ip: 10.0.0.2, 被选中次数: 3
+本次选择的ip: 10.0.0.3, 被选中次数: 5
+本次选择的ip: 10.0.0.1, 被选中次数: 2
+本次选择的ip: 10.0.0.2, 被选中次数: 4
+本次选择的ip: 10.0.0.3, 被选中次数: 6</code></pre>
+<hr>
+
+  </section>
+  <footer class="post-footer">
+    <!--
+    <section class="author">
+      <h4>vincent</h4>
+      <p></p>
+    </section>
+    -->
+  </footer>
+</article>
+
+<nav class="pagination" role="pagination">
+    
+    <span class="page-number">•</span>
+    
+    <a class="older-posts" href="/2017/12/14/20171214-shutdownhook/">
+        <!--ShutdownHook-优雅关闭--> next →
+    </a>
+    
+</nav>
+
+
+        </main>
+        <footer id="footer">
+            <section id="footer-message">&copy; 2020 vincent. All rights reserved.</section>
+        </footer>
+    </body>
+</html>
+
+
